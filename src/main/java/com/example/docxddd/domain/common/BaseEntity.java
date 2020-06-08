@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -12,6 +13,7 @@ import javax.persistence.MappedSuperclass;
 
 @Getter
 @EqualsAndHashCode
+@ToString
 @MappedSuperclass
 public abstract class BaseEntity {
 

@@ -1,17 +1,24 @@
 package com.example.docxddd.domain.folder;
 
-import lombok.AllArgsConstructor;
+import com.example.docxddd.domain.common.Result;
+
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@NoArgsConstructor
-@AllArgsConstructor
+// TODO - Pensar numa de ter somente attachments válidos
+// TODO - Criar um AttachmentDto e validar a existência de cada um, gerando um Attachment
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @EqualsAndHashCode
 @ToString
 public class Attachment {
+
+    public static final Integer ZERO_PAGES = 0;
+    public static final Integer ONE_PAGE = 1;
+    public static final Integer TWO_PAGES = 2;
 
     public static final Integer PAGE_ONE = 1;
     public static final Integer PAGE_TWO = 2;
@@ -21,4 +28,39 @@ public class Attachment {
     private String contentType;
 
     private Integer pageNumber;
+
+    private Attachment(String fileName,
+                       String contentType,
+                       Integer pageNumber) {
+
+        if (fileName == null) {
+            throw new IllegalArgumentException("fileName cannot be null");
+        }
+
+        if (contentType == null) {
+            throw new IllegalArgumentException("contentType cannot be null");
+        }
+
+        if (pageNumber == null) {
+            throw new IllegalArgumentException("pageNumber cannot be null");
+        }
+
+        if (pageNumber.equals(0)) {
+            throw new IllegalArgumentException("pageNumber cannot be zero");
+        }
+
+        this.fileName = fileName;
+        this.contentType = contentType;
+        this.pageNumber = pageNumber;
+    }
+
+    public static Result<Attachment> create(String fileName,
+                                            String contentType,
+                                            Integer pageNumber) {
+        try {
+            return Result.ok(new Attachment(fileName, contentType, pageNumber));
+        } catch (IllegalArgumentException ex) {
+            return Result.error(ex.getMessage());
+        }
+    }
 }

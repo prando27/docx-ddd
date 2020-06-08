@@ -2,9 +2,11 @@ package com.example.docxddd.domain.folder.entity;
 
 import com.example.docxddd.domain.common.AggregateRoot;
 import com.example.docxddd.domain.common.Result;
+import com.example.docxddd.domain.folder.Attachment;
+import com.example.docxddd.domain.folder.DocumentType;
+import com.example.docxddd.domain.folder.DocumentTypeAttributes;
 import com.example.docxddd.domain.folder.FolderType;
-import com.example.docxddd.domain.folder.MaxDocumentTypePerFolder;
-import com.example.docxddd.domain.folder.entity.personalinfo.PersonalDataDocument;
+import com.example.docxddd.domain.folder.entity.personaldata.PersonalDataAttributes;
 
 import lombok.Getter;
 
@@ -52,11 +54,10 @@ public class Folder extends AggregateRoot {
     // TODO Nada mais é do que o nome que existe no PERSONAL_DATA da folder
     public String getLabel() {
         return documents.stream()
-                .filter(document -> document instanceof PersonalDataDocument)
+                .filter(document -> DocumentType.PERSONAL_DATA.equals(document.getDocumentType()))
                 .findFirst()
-                .map(document -> (PersonalDataDocument) document)
-                .map(PersonalDataDocument::getAttributes)
-                .map(PersonalDataDocument.PersonalDataAttributes::getFullName)
+                .map(document -> (PersonalDataAttributes) document.getAttributes())
+                .map(attributes -> attributes.getFullName().getValue())
                 .orElse("No Label");
     }
 
@@ -97,35 +98,85 @@ public class Folder extends AggregateRoot {
     // Business logic
     //================================================================================
 
-    // TODO - Lógica de não permitir documentos repetidos
     public Result<Boolean> addDocument(Document document) {
-        if (document == null) {
-            return Result.error("document cannot be null");
-        }
-
-        boolean doesDocumentExists = isDocumentWithSameContentExists(document.getContent());
-        if (doesDocumentExists) {
-            if (document.getMaxDocumentTypePerFolder() == MaxDocumentTypePerFolder.ONE) {
-                return Result.ok(Boolean.FALSE);
-            }
-        }
 
         document.setFolder(this);
-        documents.add(document);
-
-        return Result.ok(Boolean.TRUE);
-    }
-
-    private boolean isDocumentWithSameContentExists(String documentContent) {
-        return documents.stream()
-                .map(Document::getContent)
-                .anyMatch(content -> content.equals(documentContent));
+        return Result.ok(documents.add(document));
     }
 
     public Result<Void> updateDocument(Long documentId,
-                                       Document document) {
+                                       DocumentType documentType,
+                                       DocumentTypeAttributes attributes,
+                                       List<Attachment> attachments) {
+
+        var documentOptional = findDocumentById(documentId);
+        if (documentOptional.isEmpty()) {
+            return Result.error("Document not found");
+        }
+        var document = documentOptional.get();
+
+        if (!documentType.equals(document.getDocumentType())) {
+            document.changeDocumentType(documentType, attributes, attachments);
+        } else {
+            document.update(attributes, attachments);
+        }
+
         return Result.ok(null);
     }
+
+//    // TODO - Criar 3 métodos, changeDocumentType, changeDocumentAttributes, changeDocumentAttachments
+//    public Result<Boolean> updateDocument(Long documentId,
+//                                          DocumentType documentType, // TODO - Possibilita troca de tipo (IdentityDoc)
+//                                          DocumentTypeAttributes documentTypeAttributes,
+//                                          List<Attachment> attachments) {
+//
+//        var existingDocumentOptional = findDocumentById(documentId);
+//        if (existingDocumentOptional.isEmpty()) {
+//            return Result.error("Document not found");
+//        }
+//        var existingDocument = existingDocumentOptional.get();
+//
+//        if (documentType != null) {
+//            // check documentType change
+//            // checar class de documentAttributes, tem que ser o mesmo do DocumentType passado por parâmetro
+////            documentType.getDocumentTypeClazz().isInstance(documentTypeAttributes)
+//        }
+//
+//
+//
+//
+//        return null;
+//    }
+
+    // TODO - Lógica de não permitir documentos repetidos
+//    public Result<Boolean> addDocument(Document document) {
+//        if (document == null) {
+//            return Result.error("document cannot be null");
+//        }
+//
+//        boolean doesDocumentExists = isDocumentWithSameContentExists(document.getContent());
+//        if (doesDocumentExists) {
+//            if (document.getMaxDocumentTypePerFolder() == MaxDocumentTypePerFolder.ONE) {
+//                return Result.ok(Boolean.FALSE);
+//            }
+//        }
+//
+//        document.setFolder(this);
+//        documents.add(document);
+//
+//        return Result.ok(Boolean.TRUE);
+//    }
+
+//    private boolean isDocumentWithSameContentExists(String documentContent) {
+//        return documents.stream()
+//                .map(Document::getContent)
+//                .anyMatch(content -> content.equals(documentContent));
+//    }
+
+//    public Result<Void> updateDocument(Long documentId,
+//                                       Document document) {
+//        return Result.ok(null);
+//    }
 
     public Result<Boolean> removeDocumentById(Long documentId) {
 

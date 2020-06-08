@@ -74,3 +74,49 @@
 2. O Spring faz rollback de transação somente em caso de exceção, com o uso do Result isso deve ser repensado.
 3. Como usar o mesmo tipo de documento para contextos diferentes (A mesma pasta pode ser usada para diferentes contextos).
   - Abrir um pouco o contrato do objeto e usando NullObject para evitar NPE
+
+
+
+
+
+Alguns documentos tem campos obrigatórios por contexto, como validar isso a nível de API?
+
+Exemplo:
+
+PERSONAL_DATA (Um por contexto!!!!!)
+
+PP = Nome, CPF e Email
+IQ = Nome, CPF, Estado Civil, Celular, Telefone, Email
+MR = Nome, Data de Nascimento/ (Se for maior de idade) RG, CPF, Celular, Email
+
+Nome, Email
+
+OWNER_PERSONAL_DATA
+TENANT_PERSONAL_DATA
+RESIDENT_PERSONAL_DATA
+
+1 - O que é comum entre eles pode ser sempre atualizado!
+Comum: Nome,
+
+
+Opções:
+1 - Modelo possui diferentes DocumentTypes (OWNER_PERSONAL, TENANT_PERSONAL, RESIDENT_PERSONAL)
+ 1.1. Contra: Duplicação de dados
+ 1.2. Contra: Aproveitamento de documentos precisa ser feito do lado client
+  1.2.1. Tela de IQ: Client ve que não tem TENANT_PERSONAL mas tem OWNER_PERSONAL e já popula o store com os campos encontrados (Nome e Email por ex)
+ 1.3. Pró: Mais fácil de implementar, seria apenas outro tipo de documento
+ 1.4. Pró: Modelo fica ajustado as necessidades do tipo de documento, continua forte, não precisa de checagem para lidar com os campos (Always Valid)
+ 1.5. Pró: Consumidores são simples pois seria um DocumentProcessor para cada tipo novo
+
+2 - ApplicationService tem uma camada de contexto (Pode ser um header ou endpoint diferente) para o tipo de documento, nesse caso o PERSONAL_DATA possui todos os dados possíveis
+ 2.1 - Validação é feita de maneira contextual, se chamou a api no contexto PP, valida x campos, contexto IQ y campos e por ai vai
+ 2.2. Pró: Não tem duplicação de código, tudo fica armazenado no mesmo DocumentType PERSONAL_DATA
+ 2.3. Pró: Aproveitamento de documento entre contexto é mais fácil
+  2.3.1. Ex: O client já tem o PERSONAL_DATA preenchido em outro contexto e pode exigir somente o preenchimento dos dados restantes
+ 2.4. Contra: Modelo fica fraco, qualquer uso dos campos de PERSONAL_DATA precisam de um Optional ou if != null (Não é Always Valid)
+ 2.5. Contra: Lógica de atualização fica mais perigosa, não pode apenas trocar os attributes e sim fazer um merge para não perder dados de outro contexto
+ 2.6. Contra: Consumidor prejudicado pois teria que lidar com lógica de atributos nulos (Pode não ser um problema)
+  2.6.1. Sempre ficar validando se os campos daquele contexto estão preenchidos
+
+
+
