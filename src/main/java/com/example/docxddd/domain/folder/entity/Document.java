@@ -70,7 +70,7 @@ public class Document extends BaseEntity {
     }
 
     public DocumentTypeAttributes getAttributes() {
-        return toDocumentTypeAttributes(documentType.getDocumentTypeClass());
+        return toDocumentTypeAttributes(documentType.getAttributesClass());
     }
 
     public List<Attachment> getAttachments() {
@@ -110,10 +110,10 @@ public class Document extends BaseEntity {
         }
 
         if (attributes != null
-                && !documentType.getDocumentTypeClass().isInstance(attributes)) {
+                && !documentType.getAttributesClass().isInstance(attributes)) {
             throw new IllegalArgumentException("DocumentType: "
                     + documentType.name() + " should use "
-                    + documentType.getDocumentTypeClass().getSimpleName());
+                    + documentType.getAttributesClass().getSimpleName());
         }
 
         if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
@@ -148,10 +148,10 @@ public class Document extends BaseEntity {
     public void update(DocumentTypeAttributes attributes,
                        List<Attachment> attachments) {
         if (attributes != null
-                && !documentType.getDocumentTypeClass().isInstance(attributes)) {
+                && !documentType.getAttributesClass().isInstance(attributes)) {
             throw new IllegalArgumentException("DocumentType: "
                     + documentType.name() + " should use "
-                    + documentType.getDocumentTypeClass().getSimpleName());
+                    + documentType.getAttributesClass().getSimpleName());
         }
 
         if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
@@ -163,7 +163,7 @@ public class Document extends BaseEntity {
         // TODO - Rever esse ponto para remoção do merge e fazer um modo all win
         if (attributes != null) {
             if (this.attributes != null) {
-                this.attributes = toMapAttributes(toDocumentTypeAttributes(documentType.getDocumentTypeClass()).mergeWith(attributes));
+                this.attributes = toMapAttributes(toDocumentTypeAttributes(documentType.getAttributesClass()).mergeWith(attributes));
             } else {
                 this.attributes = toMapAttributes(attributes);
             }

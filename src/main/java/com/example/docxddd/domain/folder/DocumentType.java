@@ -46,16 +46,16 @@ public enum DocumentType {
 
     private final int id;
     private final DocumentTypeCategory category;
-    private final Class<? extends DocumentTypeAttributes> documentTypeClass;
+    private final Class<? extends DocumentTypeAttributes> attributesClass;
     private final Integer numberOfAttachments;
 
     DocumentType(int id,
                  DocumentTypeCategory category,
-                 Class<? extends DocumentTypeAttributes> documentTypeClass,
+                 Class<? extends DocumentTypeAttributes> attributesClass,
                  Integer numberOfAttachments) {
         this.id = id;
         this.category = category;
-        this.documentTypeClass = documentTypeClass;
+        this.attributesClass = attributesClass;
         this.numberOfAttachments = numberOfAttachments;
     }
 
