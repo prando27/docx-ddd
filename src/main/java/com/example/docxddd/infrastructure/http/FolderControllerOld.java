@@ -1,7 +1,5 @@
 package com.example.docxddd.infrastructure.http;
 
-import com.example.docxddd.application.FolderApplicationServiceController;
-
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.bind.annotation.RestController;
@@ -10,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class FolderControllerOld {
 
-    private final FolderApplicationServiceController folderApplicationService;
+//    private final FolderApplicationServiceController folderApplicationService;
 
 //    @PostMapping("/folders")
 //    public ResponseEntity<Envelope<FolderDto>> create(@RequestBody CreateFolderDto dto) {

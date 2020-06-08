@@ -70,7 +70,7 @@ public class Document extends BaseEntity {
     }
 
     public DocumentTypeAttributes getAttributes() {
-        return toDocumentTypeAttributes(documentType.getDocumentTypeClazz());
+        return toDocumentTypeAttributes(documentType.getDocumentTypeClass());
     }
 
     public List<Attachment> getAttachments() {
@@ -110,17 +110,17 @@ public class Document extends BaseEntity {
         }
 
         if (attributes != null
-                && !documentType.getDocumentTypeClazz().isInstance(attributes)) {
+                && !documentType.getDocumentTypeClass().isInstance(attributes)) {
             throw new IllegalArgumentException("DocumentType: "
                     + documentType.name() + " should use "
-                    + documentType.getDocumentTypeClazz().getSimpleName());
+                    + documentType.getDocumentTypeClass().getSimpleName());
         }
 
-        if (!documentType.getNumberOfPages().equals(ZERO_PAGES)
+        if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
                 && (attachments == null || attachments.isEmpty())) {
             throw new IllegalArgumentException("DocumentType: " + documentType.name()
-                    + " require " + documentType.getNumberOfPages()
-                    + (documentType.getNumberOfPages().equals(ONE_PAGE) ? " attachment" : " attachments"));
+                    + " require " + documentType.getNumberOfAttachments()
+                    + (documentType.getNumberOfAttachments().equals(ONE_PAGE) ? " attachment" : " attachments"));
         }
 
         this.documentType = documentType;
@@ -148,22 +148,22 @@ public class Document extends BaseEntity {
     public void update(DocumentTypeAttributes attributes,
                        List<Attachment> attachments) {
         if (attributes != null
-                && !documentType.getDocumentTypeClazz().isInstance(attributes)) {
+                && !documentType.getDocumentTypeClass().isInstance(attributes)) {
             throw new IllegalArgumentException("DocumentType: "
                     + documentType.name() + " should use "
-                    + documentType.getDocumentTypeClazz().getSimpleName());
+                    + documentType.getDocumentTypeClass().getSimpleName());
         }
 
-        if (!documentType.getNumberOfPages().equals(ZERO_PAGES)
+        if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
                 && (attachments == null || attachments.isEmpty())) {
             throw new IllegalArgumentException("DocumentType: " + documentType.name()
-                    + " require " + documentType.getNumberOfPages() + (documentType.getNumberOfPages().equals(ONE_PAGE) ? "attachment" : "attachments"));
+                    + " require " + documentType.getNumberOfAttachments() + (documentType.getNumberOfAttachments().equals(ONE_PAGE) ? "attachment" : "attachments"));
         }
 
         // TODO - Rever esse ponto para remoção do merge e fazer um modo all win
         if (attributes != null) {
             if (this.attributes != null) {
-                this.attributes = toMapAttributes(toDocumentTypeAttributes(documentType.getDocumentTypeClazz()).mergeWith(attributes));
+                this.attributes = toMapAttributes(toDocumentTypeAttributes(documentType.getDocumentTypeClass()).mergeWith(attributes));
             } else {
                 this.attributes = toMapAttributes(attributes);
             }
