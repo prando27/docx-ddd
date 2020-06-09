@@ -5,9 +5,8 @@ import lombok.Getter;
 @Getter
 public enum DocumentTypeCategory {
 
-    GENERAL(Constants.UNLIMITED_DOCUMENTS),
-    IDENTITY(Constants.ONE_DOCUMENT),
-    INCOME(Constants.ONE_DOCUMENT);
+    DEFAULT(Constants.UNLIMITED_DOCUMENTS),
+    UNIQUE(Constants.ONE_DOCUMENT);
 
     private final Integer numberOfDocuments;
 

@@ -69,8 +69,12 @@ public class Document extends BaseEntity {
         return OBJECT_MAPPER.convertValue(attributes, documentTypeAttributeClass);
     }
 
-    public DocumentTypeAttributes getAttributes() {
-        return toDocumentTypeAttributes(documentType.getAttributesClass());
+    // Sempre que um getter for nullable, retornar Optional
+    public Optional<DocumentTypeAttributes> getAttributes() {
+        if (attributes != null) {
+            return Optional.of(toDocumentTypeAttributes(documentType.getAttributesClass()));
+        }
+        return Optional.empty();
     }
 
     public List<Attachment> getAttachments() {
@@ -79,31 +83,27 @@ public class Document extends BaseEntity {
                 .orElseGet(() -> Collections.unmodifiableList(Collections.emptyList()));
     }
 
-//    public abstract MaxDocumentTypePerFolder getMaxDocumentTypePerFolder();
-//
-//    public abstract String getContent();
+    public boolean isNotSameDocumentType(DocumentType documentType) {
+        return !this.documentType.equals(documentType);
+    }
+
+    public String getUniquenessKey() {
+        return documentType.getUniquenessKeyFunction().apply(this);
+    }
 
     private Document(DocumentType documentType,
                      DocumentTypeAttributes attributes,
                      List<Attachment> attachments) {
-
-        setData(documentType, attributes, attachments);
-
-//        if (!documentType.getNumberOfPages().equals(attachments.size())) {
-//            throw new IllegalArgumentException(documentType.getNumberOfPages()
-//                    + " attachments required");
-//        }
-
-        // Validar se o page number de cada attachment está correto
+        checkDocumentInvariants(documentType, attributes, attachments);
 
         this.documentType = documentType;
         this.attributes = attributes != null ? toMapAttributes(attributes) : null;
         this.attachments = attachments;
     }
 
-    private void setData(DocumentType documentType,
-                         DocumentTypeAttributes attributes,
-                         List<Attachment> attachments) {
+    private void checkDocumentInvariants(DocumentType documentType,
+                                         DocumentTypeAttributes attributes,
+                                         List<Attachment> attachments) {
 
         if (documentType == null) {
             throw new IllegalArgumentException("DocumentType cannot be null");
@@ -116,16 +116,21 @@ public class Document extends BaseEntity {
                     + documentType.getAttributesClass().getSimpleName());
         }
 
-        if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
-                && (attachments == null || attachments.isEmpty())) {
+        if (documentType.getNumberOfAttachments() != ZERO_PAGES
+                && (attachments == null || attachments.size() != documentType.getNumberOfAttachments())) {
             throw new IllegalArgumentException("DocumentType: " + documentType.name()
                     + " require " + documentType.getNumberOfAttachments()
-                    + (documentType.getNumberOfAttachments().equals(ONE_PAGE) ? " attachment" : " attachments"));
+                    + (documentType.getNumberOfAttachments() == ONE_PAGE ? " attachment" : " attachments"));
         }
 
-        this.documentType = documentType;
-        this.attributes = attributes != null ? toMapAttributes(attributes) : null;
-        this.attachments = attachments;
+        if (attachments != null
+                && (attachments.stream()
+                    .map(Attachment::getPageNumber)
+                    .anyMatch(pageNumber -> pageNumber > attachments.size()))) {
+
+                throw new IllegalArgumentException("Attachment pageNumber"
+                        + " cannot be higher than the number required attachments");
+        }
     }
 
     public static Result<Document> create(DocumentType documentType,
@@ -138,37 +143,42 @@ public class Document extends BaseEntity {
         }
     }
 
-    // TODO Retornar um result
-    public void changeDocumentType(DocumentType documentType,
-                                   DocumentTypeAttributes attributes,
-                                   List<Attachment> attachments) {
-        setData(documentType, attributes, attachments);
+    public Result<Void> changeDocumentType(DocumentType documentType,
+                                           DocumentTypeAttributes attributes,
+                                           List<Attachment> attachments) {
+        try {
+            checkDocumentInvariants(
+                    documentType,
+                    attributes,
+                    attachments);
+
+            this.documentType = documentType;
+            this.attributes = attributes != null ? toMapAttributes(attributes) : null;
+            this.attachments = attachments;
+
+            return Result.ok(null);
+        } catch (IllegalArgumentException ex) {
+            return Result.error(ex.getMessage());
+        }
     }
 
-    public void update(DocumentTypeAttributes attributes,
-                       List<Attachment> attachments) {
-        if (attributes != null
-                && !documentType.getAttributesClass().isInstance(attributes)) {
-            throw new IllegalArgumentException("DocumentType: "
-                    + documentType.name() + " should use "
-                    + documentType.getAttributesClass().getSimpleName());
-        }
+    public Result<Void> update(DocumentTypeAttributes attributes,
+                               List<Attachment> attachments) {
+        try {
+            checkDocumentInvariants(
+                    this.documentType,
+                    attributes,
+                    attachments);
 
-        if (!documentType.getNumberOfAttachments().equals(ZERO_PAGES)
-                && (attachments == null || attachments.isEmpty())) {
-            throw new IllegalArgumentException("DocumentType: " + documentType.name()
-                    + " require " + documentType.getNumberOfAttachments() + (documentType.getNumberOfAttachments().equals(ONE_PAGE) ? "attachment" : "attachments"));
-        }
-
-        // TODO - Rever esse ponto para remoção do merge e fazer um modo all win
-        if (attributes != null) {
-            if (this.attributes != null) {
-                this.attributes = toMapAttributes(toDocumentTypeAttributes(documentType.getAttributesClass()).mergeWith(attributes));
-            } else {
+            if (attributes != null) {
                 this.attributes = toMapAttributes(attributes);
             }
-        }
 
-        this.attachments = attachments;
+            this.attachments = attachments;
+
+            return Result.ok(null);
+        } catch (IllegalArgumentException ex) {
+            return Result.error(ex.getMessage());
+        }
     }
 }

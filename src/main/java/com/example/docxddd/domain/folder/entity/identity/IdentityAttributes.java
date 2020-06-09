@@ -9,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-import static java.util.Optional.ofNullable;
-
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @EqualsAndHashCode(callSuper = false)
@@ -34,14 +32,5 @@ public class IdentityAttributes extends DocumentTypeAttributes {
         } catch (IllegalArgumentException ex) {
             return Result.error(ex.getMessage());
         }
-    }
-
-    @Override
-    public DocumentTypeAttributes mergeWith(DocumentTypeAttributes attributes) {
-        var attrs = (IdentityAttributes) attributes;
-
-        return new IdentityAttributes(
-                ofNullable(documentNumber).orElse(attrs.documentNumber)
-        );
     }
 }

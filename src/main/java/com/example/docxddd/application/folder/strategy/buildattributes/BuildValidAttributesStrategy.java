@@ -8,11 +8,11 @@ import com.example.docxddd.domain.folder.DocumentTypeAttributes;
 
 import java.util.List;
 
-public interface BuildAttributesStrategy<T extends DocumentTypeAttributes> {
+public interface BuildValidAttributesStrategy<T extends DocumentTypeAttributes> {
 
-    Result<T> create(DocumentTypeAttributesDto attributes);
+    Result<T> build(DocumentTypeAttributesDto attributes);
 
-    DocumentType documentTypeToApply();
+    List<DocumentType> documentTypesToApply();
 
     List<Context> contextsToApply();
 }

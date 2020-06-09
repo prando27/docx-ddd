@@ -16,10 +16,10 @@ import lombok.ToString;
 @ToString
 public class Attachment {
 
-    public static final Integer ZERO_PAGES = 0;
-    public static final Integer ONE_PAGE = 1;
-    public static final Integer TWO_PAGES = 2;
-    public static final Integer UNLIMITED_PAGES = Integer.MAX_VALUE;
+    public static final int ZERO_PAGES = 0;
+    public static final int ONE_PAGE = 1;
+    public static final int TWO_PAGES = 2;
+    public static final int UNLIMITED_PAGES = Integer.MAX_VALUE;
 
     private String fileName;
 

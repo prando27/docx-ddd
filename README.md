@@ -89,7 +89,7 @@ PP = Nome, CPF e Email
 IQ = Nome, CPF, Estado Civil, Celular, Telefone, Email
 MR = Nome, Data de Nascimento/ (Se for maior de idade) RG, CPF, Celular, Email
 
-Nome, Email
+Nome
 
 OWNER_PERSONAL_DATA
 TENANT_PERSONAL_DATA

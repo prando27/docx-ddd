@@ -12,7 +12,6 @@ import lombok.Getter;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -30,15 +29,11 @@ public class Folder extends AggregateRoot {
     // Properties
     //================================================================================
 
-//    @ManyToOne
-//    @JoinColumn(name = "user_id")
-//    private User user;
-
     private FolderType folderType;
 
     private String externalId;
 
-    @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "folder", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Document> documents;
 
     //================================================================================
@@ -56,7 +51,8 @@ public class Folder extends AggregateRoot {
         return documents.stream()
                 .filter(document -> DocumentType.PERSONAL_DATA.equals(document.getDocumentType()))
                 .findFirst()
-                .map(document -> (PersonalDataAttributes) document.getAttributes())
+                .flatMap(Document::getAttributes)
+                .map(attributes -> (PersonalDataAttributes) attributes)
                 .map(attributes -> attributes.getFullName().getValue())
                 .orElse("No Label");
     }
@@ -100,6 +96,13 @@ public class Folder extends AggregateRoot {
 
     public Result<Boolean> addDocument(Document document) {
 
+        boolean documentAlreadyExists = documents.stream()
+                .map(Document::getUniquenessKey)
+                .anyMatch(uniquenessKey -> document.getUniquenessKey().equals(uniquenessKey));
+        if (documentAlreadyExists) {
+            return Result.error("Document already exists");
+        }
+
         document.setFolder(this);
         return Result.ok(documents.add(document));
     }
@@ -113,70 +116,34 @@ public class Folder extends AggregateRoot {
         if (documentOptional.isEmpty()) {
             return Result.error("Document not found");
         }
-        var document = documentOptional.get();
+        var existingDocument = documentOptional.get();
 
-        if (!documentType.equals(document.getDocumentType())) {
-            document.changeDocumentType(documentType, attributes, attachments);
+        Result<Void> updateDocumentResult = null;
+        if (!documentType.equals(existingDocument.getDocumentType())) {
+            updateDocumentResult = existingDocument.changeDocumentType(
+                    documentType,
+                    attributes,
+                    attachments);
         } else {
-            document.update(attributes, attachments);
+            updateDocumentResult = existingDocument.update(
+                    attributes,
+                    attachments);
         }
 
-        return Result.ok(null);
+        if (updateDocumentResult.isError()) {
+            return Result.error(updateDocumentResult.getError());
+        }
+
+        boolean documentWithSameUniquenessKeyExists = documents.stream()
+                .filter(d -> !documentId.equals(d.getId()))
+                .anyMatch(d -> existingDocument.getUniquenessKey().equals(d.getUniquenessKey()));
+        if (documentWithSameUniquenessKeyExists) {
+            return Result.error("Document already exists");
+        }
+
+        return updateDocumentResult;
+
     }
-
-//    // TODO - Criar 3 métodos, changeDocumentType, changeDocumentAttributes, changeDocumentAttachments
-//    public Result<Boolean> updateDocument(Long documentId,
-//                                          DocumentType documentType, // TODO - Possibilita troca de tipo (IdentityDoc)
-//                                          DocumentTypeAttributes documentTypeAttributes,
-//                                          List<Attachment> attachments) {
-//
-//        var existingDocumentOptional = findDocumentById(documentId);
-//        if (existingDocumentOptional.isEmpty()) {
-//            return Result.error("Document not found");
-//        }
-//        var existingDocument = existingDocumentOptional.get();
-//
-//        if (documentType != null) {
-//            // check documentType change
-//            // checar class de documentAttributes, tem que ser o mesmo do DocumentType passado por parâmetro
-////            documentType.getDocumentTypeClazz().isInstance(documentTypeAttributes)
-//        }
-//
-//
-//
-//
-//        return null;
-//    }
-
-    // TODO - Lógica de não permitir documentos repetidos
-//    public Result<Boolean> addDocument(Document document) {
-//        if (document == null) {
-//            return Result.error("document cannot be null");
-//        }
-//
-//        boolean doesDocumentExists = isDocumentWithSameContentExists(document.getContent());
-//        if (doesDocumentExists) {
-//            if (document.getMaxDocumentTypePerFolder() == MaxDocumentTypePerFolder.ONE) {
-//                return Result.ok(Boolean.FALSE);
-//            }
-//        }
-//
-//        document.setFolder(this);
-//        documents.add(document);
-//
-//        return Result.ok(Boolean.TRUE);
-//    }
-
-//    private boolean isDocumentWithSameContentExists(String documentContent) {
-//        return documents.stream()
-//                .map(Document::getContent)
-//                .anyMatch(content -> content.equals(documentContent));
-//    }
-
-//    public Result<Void> updateDocument(Long documentId,
-//                                       Document document) {
-//        return Result.ok(null);
-//    }
 
     public Result<Boolean> removeDocumentById(Long documentId) {
 

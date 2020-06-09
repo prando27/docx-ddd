@@ -3,7 +3,7 @@ package com.example.docxddd.application.folder.strategy.buildattributes.owner;
 import com.example.docxddd.application.folder.dto.DocumentTypeAttributesDto;
 import com.example.docxddd.application.folder.dto.PersonalDataAttributesDto;
 import com.example.docxddd.application.folder.strategy.Context;
-import com.example.docxddd.application.folder.strategy.buildattributes.BuildAttributesStrategy;
+import com.example.docxddd.application.folder.strategy.buildattributes.BuildValidAttributesStrategy;
 import com.example.docxddd.domain.Cpf;
 import com.example.docxddd.domain.Email;
 import com.example.docxddd.domain.Name;
@@ -17,11 +17,11 @@ import java.util.Collections;
 import java.util.List;
 
 @Component
-public class OwnerPersonalDataBuildAttributesStrategy
-        implements BuildAttributesStrategy<PersonalDataAttributes> {
+public class OwnerPersonalDataBuildValidAttributesStrategy
+        implements BuildValidAttributesStrategy<PersonalDataAttributes> {
 
     @Override
-    public Result<PersonalDataAttributes> create(DocumentTypeAttributesDto attributes) {
+    public Result<PersonalDataAttributes> build(DocumentTypeAttributesDto attributes) {
         var dto = (PersonalDataAttributesDto) attributes;
 
         Result<Name> fullNameResult = Name.create(dto.getFullName());
@@ -46,8 +46,8 @@ public class OwnerPersonalDataBuildAttributesStrategy
     }
 
     @Override
-    public DocumentType documentTypeToApply() {
-        return DocumentType.PERSONAL_DATA;
+    public List<DocumentType> documentTypesToApply() {
+        return Collections.singletonList(DocumentType.PERSONAL_DATA);
     }
 
     @Override

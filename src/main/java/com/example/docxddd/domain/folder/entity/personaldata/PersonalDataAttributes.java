@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 
@@ -54,26 +55,58 @@ public class PersonalDataAttributes extends DocumentTypeAttributes {
         this.birthDate = birthDate;
     }
 
-    @Override
-    public DocumentTypeAttributes mergeWith(DocumentTypeAttributes attributes) {
-        if (!attributes.getClass().isInstance(this)) {
-            throw new IllegalArgumentException("attributes of different type");
-        }
-
-        var attrs = (PersonalDataAttributes) attributes;
-
-        return new PersonalDataAttributes(
-                ofNullable(fullName).orElse(attrs.fullName),
-                ofNullable(email).orElse(attrs.email),
-                ofNullable(cpf).orElse(attrs.cpf),
-                ofNullable(maritalStatus).orElse(attrs.maritalStatus),
-                ofNullable(cellPhoneNumber).orElse(attrs.cellPhoneNumber),
-                ofNullable(phoneNumber).orElse(attrs.phoneNumber),
-                ofNullable(rg).orElse(attrs.rg),
-                ofNullable(birthDate).orElse(attrs.birthDate)
-        );
+    public Optional<Email> getEmail() {
+        return ofNullable(email);
     }
 
+    public Optional<Cpf> getCpf() {
+        return ofNullable(cpf);
+    }
+
+    public Optional<String> getMaritalStatus() {
+        return ofNullable(maritalStatus);
+    }
+
+    public Optional<String> getCellPhoneNumber() {
+        return ofNullable(cellPhoneNumber);
+    }
+
+    public Optional<String> getPhoneNumber() {
+        return ofNullable(phoneNumber);
+    }
+
+    public Optional<String> getRg() {
+        return ofNullable(rg);
+    }
+
+    public Optional<LocalDate> getBirthDate() {
+        return ofNullable(birthDate);
+    }
+
+    public static Result<PersonalDataAttributes> create(Name fullName,
+                                                        Email email,
+                                                        Cpf cpf,
+                                                        String maritalStatus,
+                                                        String cellPhoneNumber,
+                                                        String phoneNumber,
+                                                        String rg,
+                                                        LocalDate birthDate) {
+        try {
+            return Result.ok(new PersonalDataAttributes(
+                    fullName,
+                    email,
+                    cpf,
+                    maritalStatus,
+                    cellPhoneNumber,
+                    phoneNumber,
+                    rg,
+                    birthDate));
+        } catch (IllegalArgumentException ex) {
+            return Result.error(ex.getMessage());
+        }
+    }
+
+    // TODO Matar esse builder e usar sempre o método Create
     public static class Builder {
 
         private final Name fullName;

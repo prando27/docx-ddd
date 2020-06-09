@@ -1,8 +1,7 @@
-package com.example.docxddd.application.folder.strategy.buildattributes;
+package com.example.docxddd.application.folder.strategy.complete;
 
 import com.example.docxddd.application.folder.strategy.Context;
 import com.example.docxddd.domain.folder.DocumentType;
-import com.example.docxddd.domain.folder.DocumentTypeAttributes;
 
 import org.springframework.stereotype.Component;
 
@@ -12,16 +11,16 @@ import java.util.Map;
 import java.util.Optional;
 
 @Component
-public class ContextBuildAttributesStrategyFactory {
+public class ContextDocumentCompleteStrategyFactory {
 
-    private final Map<Context, Map<DocumentType, BuildValidAttributesStrategy<? extends DocumentTypeAttributes>>> buildAttributesStrategyMapByContext;
+    private final Map<Context, Map<DocumentType, DocumentCompleteStrategy>> documentCompleteStrategiesByContext;
 
-    private ContextBuildAttributesStrategyFactory(List<BuildValidAttributesStrategy<? extends DocumentTypeAttributes>> createStrategies) {
-        buildAttributesStrategyMapByContext = new HashMap<>();
+    private ContextDocumentCompleteStrategyFactory(List<DocumentCompleteStrategy> createStrategies) {
+        documentCompleteStrategiesByContext = new HashMap<>();
 
         createStrategies.forEach(strategy -> {
             strategy.contextsToApply().forEach(context -> {
-                var documentTypeMap = buildAttributesStrategyMapByContext
+                var documentTypeMap = documentCompleteStrategiesByContext
                         .computeIfAbsent(context, k -> new HashMap<>());
 
                 strategy.documentTypesToApply().forEach(documentType -> documentTypeMap.put(documentType, strategy));
@@ -30,11 +29,11 @@ public class ContextBuildAttributesStrategyFactory {
         });
     }
 
-    public Optional<BuildValidAttributesStrategy<? extends DocumentTypeAttributes>>
+    public Optional<DocumentCompleteStrategy>
         findByContextAndDocumentType(Context context,
                                      DocumentType documentType) {
 
-        return Optional.ofNullable(buildAttributesStrategyMapByContext.get(context))
+        return Optional.ofNullable(documentCompleteStrategiesByContext.get(context))
                 .map(map -> map.get(documentType));
     }
 }

@@ -8,19 +8,20 @@ import com.example.docxddd.domain.folder.entity.bankdata.BankDataAttributes;
 
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
-public class BankDataBuildAttributesStrategy implements BuildAttributesStrategy<BankDataAttributes> {
+public class BankDataBuildValidAttributesStrategy implements BuildValidAttributesStrategy<BankDataAttributes> {
 
     @Override
-    public Result<BankDataAttributes> create(DocumentTypeAttributesDto attributes) {
+    public Result<BankDataAttributes> build(DocumentTypeAttributesDto attributes) {
         return null;
     }
 
     @Override
-    public DocumentType documentTypeToApply() {
-        return DocumentType.BANK_DATA;
+    public List<DocumentType> documentTypesToApply() {
+        return Collections.singletonList(DocumentType.BANK_DATA);
     }
 
     @Override

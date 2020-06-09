@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class CnhAttributesDto extends DocumentTypeAttributesDto {
+public class IdentityDocumentAttributesDto extends DocumentTypeAttributesDto {
 
     private String documentNumber;
 }

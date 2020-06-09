@@ -19,6 +19,10 @@ public class Cpf {
     private Cpf(String value) {
         this();
 
+        if (value == null) {
+            throw new IllegalArgumentException("cpf cannot be null");
+        }
+
         new CPFValidator().assertValid(value);
 
         this.value = value;
@@ -27,6 +31,8 @@ public class Cpf {
     public static Result<Cpf> create(String value) {
         try {
             return Result.ok(new Cpf(value));
+        } catch (IllegalArgumentException ex) {
+            return Result.error(ex.getMessage());
         } catch (InvalidStateException ex) {
             return Result.error("Invalid CPF");
         }

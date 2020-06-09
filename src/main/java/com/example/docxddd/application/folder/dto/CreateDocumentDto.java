@@ -24,7 +24,8 @@ public class CreateDocumentDto {
             visible = true)
     @JsonSubTypes({
             @JsonSubTypes.Type(value = PersonalDataAttributesDto.class, name = "PERSONAL_DATA"),
-            @JsonSubTypes.Type(value = CnhAttributesDto.class, name = "CNH")
+            @JsonSubTypes.Type(value = IdentityDocumentAttributesDto.class, name = "CNH"),
+            @JsonSubTypes.Type(value = IdentityDocumentAttributesDto.class, name = "RG")
     })
     private DocumentTypeAttributesDto attributes;
 
